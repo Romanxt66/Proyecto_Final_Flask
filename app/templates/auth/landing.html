@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}SENA Prácticas — Inicio{% endblock %}
+
+{% block content %}
+<div class="login-page" style="flex-direction: column; gap: 2.5rem;">
+
+  <!-- Hero -->
+  <div class="text-center" style="animation: loginEntrance 0.5s cubic-bezier(0.34,1.56,0.64,1);">
+    <div class="login-logo mx-auto mb-3" style="width:64px;height:64px;font-size:1.8rem;">
+      <i class="bi bi-mortarboard-fill"></i>
+    </div>
+    <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;color:var(--text-primary);margin-bottom:0.35rem;">
+      SENA Prácticas
+    </h1>
+    <p style="color:var(--text-muted);font-size:0.9rem;max-width:380px;margin:0 auto;">
+      Sistema de gestión de prácticas laborales. Conecta aprendices, instructores y empresas.
+    </p>
+  </div>
+
+  <!-- Cards de acceso -->
+  <div class="d-flex gap-3 flex-wrap justify-content-center">
+
+    <!-- Registro -->
+    <div class="lib-card" style="width:260px;border-color:rgba(63,185,80,0.3);transition:all 0.25s;">
+      <div class="lib-card-body text-center p-4">
+        <div style="width:48px;height:48px;border-radius:var(--radius-md);
+             background:var(--accent-green-glow);border:1px solid rgba(63,185,80,0.3);
+             display:flex;align-items:center;justify-content:center;
+             margin:0 auto 1rem;font-size:1.3rem;color:var(--accent-green);">
+          <i class="bi bi-person-plus"></i>
+        </div>
+        <div class="lib-card-title">Registro</div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.25rem;">
+          ¿Eres aprendiz? Crea tu cuenta aquí.
+        </p>
+        <a href="{{ url_for('auth.registro') }}" id="btn-landing-registro"
+           class="btn btn-success w-100">
+          <i class="bi bi-person-plus"></i> Registrarse
+        </a>
+      </div>
+    </div>
+
+    <!-- Login -->
+    <div class="lib-card" style="width:260px;border-color:rgba(88,166,255,0.3);transition:all 0.25s;">
+      <div class="lib-card-body text-center p-4">
+        <div style="width:48px;height:48px;border-radius:var(--radius-md);
+             background:var(--accent-cyan-glow);border:1px solid rgba(88,166,255,0.3);
+             display:flex;align-items:center;justify-content:center;
+             margin:0 auto 1rem;font-size:1.3rem;color:var(--accent-cyan);">
+          <i class="bi bi-box-arrow-in-right"></i>
+        </div>
+        <div class="lib-card-title">Iniciar sesión</div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.25rem;">
+          Accede con tu correo y contraseña.
+        </p>
+        <a href="{{ url_for('auth.login') }}" id="btn-landing-login"
+           class="btn btn-primary w-100">
+          <i class="bi bi-box-arrow-in-right"></i> Ingresar
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Roles info -->
+  <div class="text-center">
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <span class="badge-lib badge-red"><i class="bi bi-circle-fill" style="font-size:0.45rem;"></i> Aprendiz</span>
+      <span class="badge-lib badge-green"><i class="bi bi-circle-fill" style="font-size:0.45rem;"></i> Instructor</span>
+      <span class="badge-lib" style="background:rgba(188,140,255,0.15);color:var(--accent-purple);border:1px solid rgba(188,140,255,0.3);">
+        <i class="bi bi-circle-fill" style="font-size:0.45rem;"></i> Superusuario
+      </span>
+    </div>
+    <p style="font-size:0.75rem;color:var(--text-disabled);margin-top:0.75rem;">
+      Instructores y superusuarios son creados por el administrador.
+    </p>
+  </div>
+
+</div>
+{% endblock %}

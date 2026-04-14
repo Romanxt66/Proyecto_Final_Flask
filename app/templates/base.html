@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SENA Prácticas{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}Sistema de Gestión de Prácticas SENA{% endblock %}">
+
+  <!-- Bootstrap CSS (local) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.min.css') }}">
+  <!-- Sistema de diseño personalizado -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='biblioteca.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="biblioteca-body">
+
+<!-- ══ NAVBAR ══════════════════════════════ -->
+{% if current_user.is_authenticated %}
+<nav class="navbar biblioteca-nav navbar-expand-lg">
+  <div class="container-fluid px-4">
+
+    <a class="navbar-brand" href="{{ url_for('auth.landing') }}">
+      <i class="bi bi-mortarboard-fill brand-icon"></i>
+      SENA Prácticas
+    </a>
+
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav me-auto gap-1">
+
+        {% set rol = namespace(nombre='') %}
+        {% for ur in current_user.roles %}
+          {% if ur.rol.nombre == 'superusuario' %}{% set rol.nombre = 'superusuario' %}
+          {% elif ur.rol.nombre == 'instructor' and rol.nombre != 'superusuario' %}{% set rol.nombre = 'instructor' %}
+          {% elif ur.rol.nombre == 'aprendiz' and rol.nombre == '' %}{% set rol.nombre = 'aprendiz' %}
+          {% endif %}
+        {% endfor %}
+
+        {% if rol.nombre == 'aprendiz' %}
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'aprendiz.dashboard' %}active{% endif %}"
+            href="{{ url_for('aprendiz.dashboard') }}"><i class="bi bi-house me-1"></i>Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'evidencias_subir' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('aprendiz.evidencias_subir') }}"><i class="bi bi-upload me-1"></i>Subir evidencias</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'progreso' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('aprendiz.progreso') }}"><i class="bi bi-graph-up me-1"></i>Mi progreso</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'informacion' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('aprendiz.informacion') }}"><i class="bi bi-person-lines-fill me-1"></i>Mi información</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'notificaciones' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('aprendiz.notificaciones') }}"><i class="bi bi-bell me-1"></i>Notificaciones</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'mis_evidencias' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('aprendiz.mis_evidencias') }}"><i class="bi bi-folder2-open me-1"></i>Mis evidencias</a></li>
+
+        {% elif rol.nombre == 'instructor' %}
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'instructor.dashboard' %}active{% endif %}"
+            href="{{ url_for('instructor.dashboard') }}"><i class="bi bi-house me-1"></i>Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'aprendices' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('instructor.aprendices') }}"><i class="bi bi-people me-1"></i>Mis aprendices</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'revisar' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('instructor.revisar_evidencias') }}"><i class="bi bi-journal-check me-1"></i>Evidencias</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'progreso_aprendices' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('instructor.progreso_aprendices') }}"><i class="bi bi-bar-chart me-1"></i>Progreso</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'mis_cursos' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('instructor.mis_cursos') }}"><i class="bi bi-book me-1"></i>Mis cursos</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'alertas' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('instructor.alertas') }}"><i class="bi bi-send me-1"></i>Alertas</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'reportes' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('instructor.reportes') }}"><i class="bi bi-file-earmark-bar-graph me-1"></i>Reportes</a></li>
+
+        {% elif rol.nombre == 'superusuario' %}
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}"
+            href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>Panel</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'usuarios' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('admin.usuarios') }}"><i class="bi bi-people me-1"></i>Usuarios</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'roles' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('admin.roles') }}"><i class="bi bi-shield-check me-1"></i>Roles</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'instructores' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('admin.instructores') }}"><i class="bi bi-person-badge me-1"></i>Instructores</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'empresas' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('admin.empresas') }}"><i class="bi bi-building me-1"></i>Empresas</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'historial' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('admin.historial') }}"><i class="bi bi-clock-history me-1"></i>Historial</a></li>
+          <li class="nav-item"><a class="nav-link {% if 'backup' in request.endpoint %}active{% endif %}"
+            href="{{ url_for('admin.backup') }}"><i class="bi bi-cloud-download me-1"></i>Backup</a></li>
+        {% endif %}
+      </ul>
+
+      <!-- User Pill -->
+      <div class="dropdown">
+        <a class="nav-user-pill dropdown-toggle" data-bs-toggle="dropdown" href="#" id="userDropdown">
+          <span class="avatar">{{ current_user.nombres[0] | upper }}</span>
+          {{ current_user.nombres }} {{ current_user.apellidos }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><span class="dropdown-item text-muted" style="font-size:0.75rem;">
+            <i class="bi bi-circle-fill me-1"
+              style="color:
+              {% if rol.nombre == 'superusuario' %}var(--accent-purple)
+              {% elif rol.nombre == 'instructor' %}var(--accent-green)
+              {% else %}var(--accent-amber){% endif %};font-size:0.5rem;"></i>
+            {{ rol.nombre | capitalize }}
+          </span></li>
+          <li><hr class="dropdown-divider" style="border-color:var(--border-default);margin:0.25rem 0;"></li>
+          <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+          </a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+<!-- ══ MAIN CONTENT ════════════════════════ -->
+<main class="{% if current_user.is_authenticated %}container-fluid px-4 py-4{% endif %}">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-3">
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }} flash-message alert-dismissible fade show" role="alert">
+            <i class="bi {% if cat == 'success' %}bi-check-circle{% elif cat == 'danger' %}bi-exclamation-triangle{% elif cat == 'warning' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %} me-2"></i>
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ══ FOOTER ══════════════════════════════ -->
+{% if current_user.is_authenticated %}
+<footer class="biblioteca-footer text-center mt-4">
+  <div class="container">
+    <span><i class="bi bi-mortarboard-fill me-1"></i>SENA Prácticas &copy; {{ moment().year if moment else 2026 }}</span>
+  </div>
+</footer>
+{% endif %}
+
+<!-- Bootstrap JS (local) -->
+<script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

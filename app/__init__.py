@@ -13,6 +13,8 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Inicia sesión para continuar.'
+    login_manager.login_message_category = 'warning'
 
     @login_manager.user_loader
     def load_user(id_usuario):
@@ -32,7 +34,8 @@ def create_app():
     from app.routes import (
         auth,
         instructor, aprendiz, curso,
-        evidencia, empresa, notificacion
+        evidencia, empresa, notificacion,
+        admin
     )
     app.register_blueprint(auth.bp)
     app.register_blueprint(instructor.bp)
@@ -41,6 +44,7 @@ def create_app():
     app.register_blueprint(evidencia.bp)
     app.register_blueprint(empresa.bp)
     app.register_blueprint(notificacion.bp)
+    app.register_blueprint(admin.bp)
 
     @app.errorhandler(Exception)
     def handle_error(e):
