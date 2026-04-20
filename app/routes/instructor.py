@@ -1,4 +1,4 @@
-﻿"""
+"""
 Blueprint Instructor — 7 módulos:
   /instructor/dashboard
   /instructor/fichas
@@ -10,6 +10,7 @@ Blueprint Instructor — 7 módulos:
   /instructor/alertas
   /instructor/reportes
 """
+from datetime import datetime
 from flask import (Blueprint, render_template, redirect, url_for,
                    flash, request)
 from flask_login import current_user, login_required
@@ -146,6 +147,50 @@ def fichas():
                            fichas_data=fichas_data, q=q)
 
 
+@bp.route('/fichas/crear', methods=['POST'])
+@login_required
+@role_required('instructor')
+def crear_ficha():
+    """Instructor crea una nueva ficha"""
+    nombre = request.form.get('nombre', '').strip()
+    ficha = request.form.get('ficha', '').strip()
+    fecha_inicio_str = request.form.get('fecha_inicio', '')
+    fecha_fin_str = request.form.get('fecha_fin', '')
+    
+    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date() if fecha_inicio_str else None
+    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date() if fecha_fin_str else None
+    
+    if not nombre:
+        flash('El nombre es requerido.', 'danger')
+        return redirect(url_for('instructor.fichas'))
+        
+    if Curso.query.filter_by(nombre=nombre).first():
+        flash('Ya existe una ficha con ese nombre.', 'warning')
+        return redirect(url_for('instructor.fichas'))
+        
+    if Curso.query.filter_by(ficha=ficha).first():
+        flash('Ya existe un código de curso con esa ficha.', 'warning')
+        return redirect(url_for('instructor.fichas'))
+        
+    curso = Curso(nombre=nombre, ficha=ficha,
+                  fecha_inicio=fecha_inicio if fecha_inicio else None,
+                  fecha_fin=fecha_fin if fecha_fin else None)
+    db.session.add(curso)
+    db.session.flush()
+    
+    inst = _get_instructor()
+    db.session.add(CursoInstructor(id_curso=curso.id_curso, id_instructor=inst.id_instructor))
+    
+    log_historial(current_user, 'Fichas Instructor', 'CREAR', f'Ficha {nombre} creada por instructor')
+    db.session.commit()
+    
+    flash('Ficha creada y asignada correctamente.', 'success')
+    next_page = request.args.get('next')
+    if next_page and next_page == 'instructor.mis_cursos':
+        return redirect(url_for('instructor.mis_cursos'))
+    return redirect(url_for('instructor.fichas'))
+
+
 @bp.route('/fichas/<int:id_curso>/detalle')
 @login_required
 @role_required('instructor')
@@ -184,9 +229,11 @@ def ficha_detalle(id_curso):
             'evidencias': evidencias
         })
     
+    empresas = Empresa.query.filter_by(activa=True).all()
     return render_template('instructor/fichas/detalle.html',
                            curso=curso,
-                           aprendices_data=aprendices_data)
+                           aprendices_data=aprendices_data,
+                           empresas=empresas)
 
 
 # ─── Mis Aprendices ───────────────────────────
@@ -212,7 +259,8 @@ def asignar_empresa(id_aprendiz):
                   f'Empresa asignada al aprendiz {id_aprendiz}')
     db.session.commit()
     flash('Empresa asignada correctamente.', 'success')
-    return redirect(url_for('instructor.aprendices'))
+    next_url = request.form.get('next') or request.referrer or url_for('instructor.aprendices')
+    return redirect(next_url)
 
 
 # ─── Actualizar horas aprendiz ────────────────
@@ -247,29 +295,28 @@ def revisar_evidencias():
                            estado_filtro=estado_filtro)
 
 
-@bp.route('/evidencias/<int:id_evidencia>/aprobar', methods=['POST'])
+@bp.route('/evidencias/<int:id_evidencia>/evaluar', methods=['POST'])
 @login_required
 @role_required('instructor')
-def aprobar_evidencia(id_evidencia):
+def evaluar_evidencia(id_evidencia):
     ev = Evidencia.query.get_or_404(id_evidencia)
-    ev.estado = 'Aprobada'
-    log_historial(current_user, 'Evidencia', 'MODIFICAR',
-                  f'Evidencia {id_evidencia} aprobada')
-    db.session.commit()
-    flash('Evidencia aprobada.', 'success')
-    return redirect(url_for('instructor.revisar_evidencias'))
-
-
-@bp.route('/evidencias/<int:id_evidencia>/rechazar', methods=['POST'])
-@login_required
-@role_required('instructor')
-def rechazar_evidencia(id_evidencia):
-    ev = Evidencia.query.get_or_404(id_evidencia)
-    ev.estado = 'No Aprobada'
-    log_historial(current_user, 'Evidencia', 'MODIFICAR',
-                  f'Evidencia {id_evidencia} rechazada')
-    db.session.commit()
-    flash('Evidencia rechazada.', 'warning')
+    estado = request.form.get('estado')
+    observaciones = request.form.get('observaciones', '').strip()
+    
+    if estado in ['Aprobada', 'No Aprobada']:
+        ev.estado = estado
+        if observaciones:
+            ev.observaciones = observaciones
+        log_historial(current_user, 'Evidencia', 'MODIFICAR',
+                      f'Evidencia {id_evidencia} calificada como {estado}')
+        db.session.commit()
+        if estado == 'Aprobada':
+            flash('Evidencia aprobada.', 'success')
+        else:
+            flash('Evidencia rechazada.', 'warning')
+    else:
+        flash('Estado de evaluación inválido.', 'danger')
+        
     return redirect(url_for('instructor.revisar_evidencias'))
 
 

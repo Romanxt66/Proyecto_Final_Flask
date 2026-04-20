@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Gestión de Fichas — SENA Prácticas{% endblock %}
 
 {% block content %}
@@ -108,6 +108,10 @@
             </td>
             <td class="text-center">
               <div class="btn-group btn-group-sm" role="group">
+                <a href="{{ url_for('admin.ficha_detalle', id_curso=ficha.curso.id_curso) }}" 
+                   class="btn btn-outline-primary" title="Ver Detalle">
+                  <i class="bi bi-eye"></i>
+                </a>
                 <button class="btn btn-outline-secondary" data-bs-toggle="modal" 
                         data-bs-target="#modalEditarFicha{{ ficha.curso.id_curso }}" 
                         title="Editar">

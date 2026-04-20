@@ -9,6 +9,7 @@ class Evidencia(db.Model):
     contenido      = db.Column(db.Text)
     fecha_entrega  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     estado         = db.Column(db.Enum('Entregada', 'Revisada', 'Aprobada', 'No Aprobada'))
+    observaciones  = db.Column(db.Text)
     bitacora       = db.Column(db.String(25))
     actas          = db.Column(db.String(25))
 

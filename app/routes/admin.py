@@ -1,4 +1,4 @@
-﻿"""
+"""
 Blueprint Admin/Superusuario â€” 7 mÃ³dulos:
   /admin/dashboard
   /admin/usuarios
@@ -27,6 +27,7 @@ from app.models.historial_cambios import HistorialCambios
 from app.models.curso import Curso
 from app.models.curso_instructor import CursoInstructor
 from app.models.curso_aprendiz import CursoAprendiz
+from app.models.evidencia import Evidencia
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -37,6 +38,7 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 @role_required('superusuario')
 def dashboard():
     total_usuarios    = Usuario.query.count()
+    total_fichas      = Curso.query.count()
     total_aprendices  = Aprendiz.query.count()
     total_instructores = Instructor.query.count()
     total_empresas    = Empresa.query.filter_by(activa=True).count()
@@ -45,6 +47,7 @@ def dashboard():
                          .limit(10).all())
     return render_template('admin/dashboard.html',
                            total_usuarios=total_usuarios,
+                           total_fichas=total_fichas,
                            total_aprendices=total_aprendices,
                            total_instructores=total_instructores,
                            total_empresas=total_empresas,
@@ -419,8 +422,11 @@ def crear_ficha():
     """Crear nueva ficha/curso"""
     nombre = request.form.get('nombre', '').strip()
     ficha = request.form.get('ficha', '').strip()
-    fecha_inicio = request.form.get('fecha_inicio', '')
-    fecha_fin = request.form.get('fecha_fin', '')
+    fecha_inicio_str = request.form.get('fecha_inicio', '')
+    fecha_fin_str = request.form.get('fecha_fin', '')
+    
+    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date() if fecha_inicio_str else None
+    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date() if fecha_fin_str else None
     
     if not nombre:
         flash('El nombre es requerido.', 'danger')
@@ -449,8 +455,11 @@ def editar_ficha(id_curso):
     curso = Curso.query.get_or_404(id_curso)
     nombre = request.form.get('nombre', '').strip()
     ficha = request.form.get('ficha', '').strip()
-    fecha_inicio = request.form.get('fecha_inicio', '')
-    fecha_fin = request.form.get('fecha_fin', '')
+    fecha_inicio_str = request.form.get('fecha_inicio', '')
+    fecha_fin_str = request.form.get('fecha_fin', '')
+    
+    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date() if fecha_inicio_str else None
+    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date() if fecha_fin_str else None
     
     if nombre and nombre != curso.nombre:
         if Curso.query.filter_by(nombre=nombre).first():
@@ -542,3 +551,59 @@ def desasignar_instructor_ficha(id_curso, id_instructor):
     
     flash('Instructor removido de la ficha.', 'success')
     return redirect(url_for('admin.fichas'))
+
+
+@bp.route('/fichas/<int:id_curso>/detalle')
+@login_required
+@role_required('superusuario')
+def ficha_detalle(id_curso):
+    """Vista detallada de la ficha para administrador"""
+    curso = Curso.query.get_or_404(id_curso)
+    
+    # Obtener aprendices de este curso
+    aprendices_curso = db.session.query(CursoAprendiz).filter_by(
+        id_curso=id_curso).all()
+    
+    aprendices_data = []
+    for ca in aprendices_curso:
+        ap = ca.aprendiz
+        pct = 0
+        if ap.horas_requeridas:
+            pct = round((ap.horas_cumplidas or 0) / ap.horas_requeridas * 100, 1)
+        
+        # Evidencias del aprendiz
+        evidencias = Evidencia.query.filter_by(
+            id_aprendiz=ap.id_aprendiz).order_by(
+            Evidencia.fecha_entrega.desc()).all()
+        
+        aprendices_data.append({
+            'aprendiz': ap,
+            'progreso': pct,
+            'horas_cumplidas': ap.horas_cumplidas,
+            'horas_requeridas': ap.horas_requeridas,
+            'evidencias': evidencias
+        })
+    
+    return render_template('admin/fichas/detalle.html',
+                           curso=curso,
+                           aprendices_data=aprendices_data)
+
+
+@bp.route('/fichas/<int:id_curso>/remover-aprendiz/<int:id_aprendiz>', methods=['POST'])
+@login_required
+@role_required('superusuario')
+def remover_aprendiz_ficha(id_curso, id_aprendiz):
+    """Remover aprendiz del curso (Solo Superusuario)"""
+    ca = db.session.query(CursoAprendiz).filter_by(
+        id_curso=id_curso, id_aprendiz=id_aprendiz).first_or_404()
+    
+    curso = ca.curso
+    aprendiz = ca.aprendiz
+    db.session.delete(ca)
+    
+    log_historial(current_user, 'Fichas Admin', 'MODIFICAR',
+                  f'Aprendiz {aprendiz.usuario.nombres} removido de la ficha {curso.nombre}')
+    db.session.commit()
+    
+    flash('Aprendiz removido de la ficha.', 'success')
+    return redirect(url_for('admin.ficha_detalle', id_curso=id_curso))

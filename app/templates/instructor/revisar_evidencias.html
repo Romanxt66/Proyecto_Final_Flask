@@ -84,12 +84,9 @@
             {% if estado_filtro == 'Entregada' %}
             <td>
               <div class="d-flex justify-content-end gap-2">
-                <form action="{{ url_for('instructor.aprobar_evidencia', id_evidencia=ev.id_evidencia) }}" method="POST" onsubmit="return confirm('¿Aprobar esta evidencia?');">
-                  <button type="submit" class="btn btn-sm btn-success" title="Aprobar"><i class="bi bi-check-lg"></i></button>
-                </form>
-                <form action="{{ url_for('instructor.rechazar_evidencia', id_evidencia=ev.id_evidencia) }}" method="POST" onsubmit="return confirm('¿Rechazar esta evidencia?');">
-                   <button type="submit" class="btn btn-sm btn-danger" title="Rechazar"><i class="bi bi-x-lg"></i></button>
-                </form>
+                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalEvaluar{{ ev.id_evidencia }}" title="Calificar Evidencia">
+                  <i class="bi bi-ui-checks"></i> Evaluar
+                </button>
               </div>
             </td>
             {% endif %}
@@ -107,4 +104,41 @@
     {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block modals %}
+  {% for ev in evidencias %}
+  <!-- Modal Evaluar Evidencia -->
+  <div class="modal fade" id="modalEvaluar{{ ev.id_evidencia }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form action="{{ url_for('instructor.evaluar_evidencia', id_evidencia=ev.id_evidencia) }}" method="POST">
+          <div class="modal-header">
+            <h5 class="modal-title">Calificar Evidencia #{{ ev.id_evidencia }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted small mb-3">Aprendiz: <strong>{{ ev.aprendiz.usuario.nombres }} {{ ev.aprendiz.usuario.apellidos }}</strong></p>
+            <div class="mb-3">
+              <label class="form-label">Calificación</label>
+              <select class="form-select" name="estado" required>
+                <option value="" disabled selected>Seleccione la calificación...</option>
+                <option value="Aprobada" class="text-success fw-bold">✓ Aprobar Evidencia</option>
+                <option value="No Aprobada" class="text-danger fw-bold">✗ Rechazar Evidencia</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Comentarios / Observaciones (Opcional)</label>
+              <textarea class="form-control bg-dark text-white border-secondary" name="observaciones" rows="3" placeholder="Escribe aquí las correcciones u observaciones de la evidencia..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar Evaluación</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 {% endblock %}

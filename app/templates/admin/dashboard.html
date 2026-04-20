@@ -6,8 +6,8 @@
   <h2 class="m-0" style="font-size: 1.25rem; font-weight: 600;"><i class="bi bi-shield-lock text-primary me-2"></i>Panel de Administración Global</h2>
 </div>
 
-<div class="row g-4 mb-4">
-  <div class="col-md-3">
+<div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4 mb-4">
+  <div class="col">
     <div class="lib-card h-100" style="border-left: 4px solid var(--accent-purple);">
       <div class="lib-card-body">
         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -20,7 +20,7 @@
     </div>
   </div>
   
-  <div class="col-md-3">
+  <div class="col">
     <div class="lib-card h-100" style="border-left: 4px solid var(--accent-cyan);">
       <div class="lib-card-body">
         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <div class="col-md-3">
+  <div class="col">
     <div class="lib-card h-100" style="border-left: 4px solid var(--accent-green);">
       <div class="lib-card-body">
         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -46,15 +46,28 @@
     </div>
   </div>
 
-  <div class="col-md-3">
-    <div class="lib-card h-100" style="border-left: 4px solid var(--accent-amber);">
+  <div class="col">
+    <div class="lib-card h-100" style="border-left: 4px solid var(--sena-orange);">
       <div class="lib-card-body">
         <div class="d-flex justify-content-between align-items-start mb-3">
-          <div class="lib-card-title text-muted text-uppercase mb-0">Empresas Activas</div>
-          <div class="shell-header-icon" style="color: var(--accent-amber); background: rgba(210,153,34,0.15); border-color: rgba(210,153,34,0.3);"><i class="bi bi-building"></i></div>
+          <div class="lib-card-title text-muted text-uppercase mb-0">Empresas</div>
+          <div class="shell-header-icon" style="color: var(--sena-orange); background: rgba(252,115,35,0.15); border-color: rgba(252,115,35,0.3);"><i class="bi bi-building"></i></div>
         </div>
         <h3 style="font-size: 2.2rem; font-weight: 700; margin: 0; color: var(--text-primary);">{{ total_empresas }}</h3>
         <a href="{{ url_for('admin.empresas') }}" class="btn btn-ghost btn-sm mt-3 w-100">Ver Empresas</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="lib-card h-100" style="border-left: 4px solid var(--sena-green);">
+      <div class="lib-card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div class="lib-card-title text-muted text-uppercase mb-0">Fichas</div>
+          <div class="shell-header-icon" style="color: var(--sena-green); background: rgba(57,169,0,0.15); border-color: rgba(57,169,0,0.3);"><i class="bi bi-journal-code"></i></div>
+        </div>
+        <h3 style="font-size: 2.2rem; font-weight: 700; margin: 0; color: var(--text-primary);">{{ total_fichas }}</h3>
+        <a href="{{ url_for('admin.fichas') }}" class="btn btn-ghost btn-sm mt-3 w-100">Gestionar Fichas</a>
       </div>
     </div>
   </div>

@@ -13,6 +13,8 @@ from app.models.usuario import Usuario
 from app.models.rol import Rol
 from app.models.usuario_rol import UsuarioRol
 from app.models.aprendiz import Aprendiz
+from app.models.curso import Curso
+from app.models.curso_aprendiz import CursoAprendiz
 from app.utils import get_user_role
 
 bp = Blueprint('auth', __name__)
@@ -73,10 +75,11 @@ def registro():
             'telefono':         request.form.get('telefono', '').strip(),
             'password':         request.form.get('password', ''),
             'confirm_password': request.form.get('confirm_password', ''),
+            'codigo_ficha':     request.form.get('codigo_ficha', '').strip(),
         }
 
         # Validaciones básicas
-        if not all([datos['nombres'], datos['apellidos'], datos['correo'], datos['password']]):
+        if not all([datos['nombres'], datos['apellidos'], datos['correo'], datos['password'], datos['codigo_ficha']]):
             flash('Completa todos los campos obligatorios.', 'danger')
             return render_template('auth/registro.html')
 
@@ -90,6 +93,11 @@ def registro():
 
         if Usuario.query.filter_by(correo=datos['correo']).first():
             flash('Ya existe una cuenta con ese correo.', 'warning')
+            return render_template('auth/registro.html')
+            
+        curso_asignar = Curso.query.filter_by(ficha=datos['codigo_ficha']).first()
+        if not curso_asignar:
+            flash(f"El código de curso/ficha '{datos['codigo_ficha']}' no existe.", 'danger')
             return render_template('auth/registro.html')
 
         # Crear usuario
@@ -114,11 +122,18 @@ def registro():
         # Crear registro en tabla aprendiz
         aprendiz = Aprendiz(
             id_usuario=nuevo_usuario.id_usuario,
+            ficha=datos['codigo_ficha'],
             estado_practica='En proceso',
             horas_requeridas=880,
             horas_cumplidas=0
         )
         db.session.add(aprendiz)
+        db.session.flush()
+        
+        # Asignar a la ficha encontrada
+        curso_aprendiz = CursoAprendiz(id_curso=curso_asignar.id_curso, id_aprendiz=aprendiz.id_aprendiz)
+        db.session.add(curso_aprendiz)
+        
         db.session.commit()
 
         flash('Cuenta creada correctamente. Inicia sesión.', 'success')

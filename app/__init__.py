@@ -46,8 +46,12 @@ def create_app():
     app.register_blueprint(notificacion.bp)
     app.register_blueprint(admin.bp)
 
+    from werkzeug.exceptions import HTTPException
+
     @app.errorhandler(Exception)
     def handle_error(e):
+        if isinstance(e, HTTPException):
+            return e # Let Flask handle standard HTTP exceptions (404, 401, etc.)
         print(f"An error occurred: {str(e)}")
         return {"error": str(e)}, 500
 

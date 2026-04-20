@@ -58,7 +58,8 @@
                 {% if ap.horas_requeridas %}
                   {% set pct = (ap.horas_cumplidas or 0) / ap.horas_requeridas * 100 %}
                 {% endif %}
-                <div class="progress-bar {% if pct >= 100 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ pct }}%;"></div>
+                {% set style_attr = 'style="width: ' ~ pct ~ '%;"' %}
+                <div class="progress-bar {% if pct >= 100 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" {{ style_attr|safe }}></div>
               </div>
             </td>
             <td>
@@ -81,76 +82,11 @@
             </td>
           </tr>
 
-          <!-- Modal Actualizar Horas / Estado -->
-          <div class="modal fade" id="modalHoras{{ ap.id_aprendiz }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <form action="{{ url_for('instructor.actualizar_horas', id_aprendiz=ap.id_aprendiz) }}" method="POST">
-                  <div class="modal-header">
-                    <h5 class="modal-title">Actualizar Progreso: {{ ap.usuario.nombres }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-3">
-                      <label class="form-label" for="horas_cumplidas_{{ ap.id_aprendiz }}">Horas Cumplidas</label>
-                      <input type="number" class="form-control" id="horas_cumplidas_{{ ap.id_aprendiz }}" name="horas_cumplidas" value="{{ ap.horas_cumplidas or 0 }}" min="0" max="{{ ap.horas_requeridas or 880 }}" required>
-                      <small class="text-muted">Horas requeridas totales: {{ ap.horas_requeridas or 0 }}</small>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label" for="estado_{{ ap.id_aprendiz }}">Estado de Práctica</label>
-                      <select class="form-select" id="estado_{{ ap.id_aprendiz }}" name="estado_practica" required>
-                        <option value="En proceso" {% if ap.estado_practica == 'En proceso' %}selected{% endif %}>En proceso</option>
-                        <option value="Aprobado" {% if ap.estado_practica == 'Aprobado' %}selected{% endif %}>Aprobado</option>
-                        <option value="Reprobado" {% if ap.estado_practica == 'Reprobado' %}selected{% endif %}>Reprobado</option>
-                        <option value="Cancelado" {% if ap.estado_practica == 'Cancelado' %}selected{% endif %}>Cancelado</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">Guardar Cambios</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <!-- Modal Asignar Empresa -->
-          <div class="modal fade" id="modalEmpresa{{ ap.id_aprendiz }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <form action="{{ url_for('instructor.asignar_empresa', id_aprendiz=ap.id_aprendiz) }}" method="POST">
-                  <div class="modal-header">
-                    <h5 class="modal-title">Asignar Empresa a: {{ ap.usuario.nombres }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <p class="text-muted small mb-3">Selecciona la empresa donde el aprendiz realizará sus prácticas. Las empresas deben ser creadas previamente por un administrador.</p>
-                    <div class="mb-3">
-                      <label class="form-label">Empresa</label>
-                      <select class="form-select" name="id_empresa" required>
-                        <option value="" disabled {% if not ap.empresa %}selected{% endif %}>Seleccione una empresa...</option>
-                        {% for emp in empresas %}
-                          <option value="{{ emp.id_empresa }}" {% if ap.empresa and ap.empresa.id_empresa == emp.id_empresa %}selected{% endif %}>
-                            {{ emp.nombre }} (NIT: {{ emp.nit }})
-                          </option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Asignar Empresa</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-
           {% endfor %}
         </tbody>
       </table>
     </div>
+
     {% else %}
     <div class="empty-state">
       <i class="bi bi-people"></i>
@@ -159,4 +95,74 @@
     {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block modals %}
+  {% for ap in aprendices %}
+  <!-- Modal Actualizar Horas / Estado -->
+  <div class="modal fade" id="modalHoras{{ ap.id_aprendiz }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form action="{{ url_for('instructor.actualizar_horas', id_aprendiz=ap.id_aprendiz) }}" method="POST">
+          <div class="modal-header">
+            <h5 class="modal-title">Actualizar Progreso: {{ ap.usuario.nombres }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label" for="horas_cumplidas_{{ ap.id_aprendiz }}">Horas Cumplidas</label>
+              <input type="number" class="form-control" id="horas_cumplidas_{{ ap.id_aprendiz }}" name="horas_cumplidas" value="{{ ap.horas_cumplidas or 0 }}" min="0" max="{{ ap.horas_requeridas or 880 }}" required>
+              <small class="text-muted">Horas requeridas totales: {{ ap.horas_requeridas or 0 }}</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="estado_{{ ap.id_aprendiz }}">Estado de Práctica</label>
+              <select class="form-select" id="estado_{{ ap.id_aprendiz }}" name="estado_practica" required>
+                <option value="En proceso" {% if ap.estado_practica == 'En proceso' %}selected{% endif %}>En proceso</option>
+                <option value="Aprobado" {% if ap.estado_practica == 'Aprobado' %}selected{% endif %}>Aprobado</option>
+                <option value="Reprobado" {% if ap.estado_practica == 'Reprobado' %}selected{% endif %}>Reprobado</option>
+                <option value="Cancelado" {% if ap.estado_practica == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Asignar Empresa -->
+  <div class="modal fade" id="modalEmpresa{{ ap.id_aprendiz }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form action="{{ url_for('instructor.asignar_empresa', id_aprendiz=ap.id_aprendiz) }}" method="POST">
+          <div class="modal-header">
+            <h5 class="modal-title">Asignar Empresa a: {{ ap.usuario.nombres }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted small mb-3">Selecciona la empresa donde el aprendiz realizará sus prácticas. Las empresas deben ser creadas previamente por un administrador.</p>
+            <div class="mb-3">
+              <label class="form-label">Empresa</label>
+              <select class="form-select" name="id_empresa" required>
+                <option value="" disabled {% if not ap.empresa %}selected{% endif %}>Seleccione una empresa...</option>
+                {% for emp in empresas %}
+                  <option value="{{ emp.id_empresa }}" {% if ap.empresa and ap.empresa.id_empresa == emp.id_empresa %}selected{% endif %}>
+                    {{ emp.nombre }} (NIT: {{ emp.nit }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Asignar Empresa</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 {% endblock %}
