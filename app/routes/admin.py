@@ -1,5 +1,5 @@
-"""
-Blueprint Admin/Superusuario — 7 módulos:
+﻿"""
+Blueprint Admin/Superusuario â€” 7 mÃ³dulos:
   /admin/dashboard
   /admin/usuarios
   /admin/roles
@@ -24,11 +24,14 @@ from app.models.instructor import Instructor
 from app.models.aprendiz import Aprendiz
 from app.models.empresa import Empresa
 from app.models.historial_cambios import HistorialCambios
+from app.models.curso import Curso
+from app.models.curso_instructor import CursoInstructor
+from app.models.curso_aprendiz import CursoAprendiz
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
-# ─── Dashboard ────────────────────────────────
+# â”€â”€â”€ Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bp.route('/dashboard')
 @login_required
 @role_required('superusuario')
@@ -48,7 +51,7 @@ def dashboard():
                            cambios_recientes=cambios_recientes)
 
 
-# ─── Gestionar Usuarios ───────────────────────
+# â”€â”€â”€ Gestionar Usuarios â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bp.route('/usuarios')
 @login_required
 @role_required('superusuario')
@@ -117,7 +120,7 @@ def toggle_usuario(id_usuario):
     return redirect(url_for('admin.usuarios'))
 
 
-# ─── Asignar Roles ────────────────────────────
+# â”€â”€â”€ Asignar Roles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bp.route('/roles')
 @login_required
 @role_required('superusuario')
@@ -177,7 +180,7 @@ def quitar_rol():
     return redirect(url_for('admin.roles'))
 
 
-# ─── Gestionar Instructores ───────────────────
+# â”€â”€â”€ Gestionar Instructores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bp.route('/instructores')
 @login_required
 @role_required('superusuario')
@@ -206,13 +209,13 @@ def editar_area_instructor(id_instructor):
     inst = Instructor.query.get_or_404(id_instructor)
     inst.area_formacion = request.form.get('area_formacion', '').strip()
     log_historial(current_user, 'Instructores', 'MODIFICAR',
-                  f'Área instructor {id_instructor}: {inst.area_formacion}')
+                  f'Ãrea instructor {id_instructor}: {inst.area_formacion}')
     db.session.commit()
-    flash('Área de formación actualizada.', 'success')
+    flash('Ãrea de formaciÃ³n actualizada.', 'success')
     return redirect(url_for('admin.instructores'))
 
 
-# ─── Gestionar Empresas ───────────────────────
+# â”€â”€â”€ Gestionar Empresas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bp.route('/empresas')
 @login_required
 @role_required('superusuario')
@@ -263,7 +266,7 @@ def editar_empresa(id_empresa):
     return redirect(url_for('admin.empresas'))
 
 
-# ─── Historial / Auditoría ────────────────────
+# â”€â”€â”€ Historial / AuditorÃ­a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bp.route('/historial')
 @login_required
 @role_required('superusuario')
@@ -275,7 +278,7 @@ def historial():
     return render_template('admin/historial.html', registros=registros)
 
 
-# ─── Backup y Reportes (exportar Excel) ───────
+# â”€â”€â”€ Backup y Reportes (exportar Excel) â”€â”€â”€â”€â”€â”€â”€
 @bp.route('/backup')
 @login_required
 @role_required('superusuario')
@@ -305,7 +308,7 @@ def exportar_excel(tipo):
     if tipo == 'aprendices':
         ws.title = 'Aprendices'
         ws.append(['ID', 'Nombres', 'Apellidos', 'Correo', 'Ficha',
-                   'Estado Práctica', 'Horas Requeridas', 'Horas Cumplidas', 'Empresa'])
+                   'Estado PrÃ¡ctica', 'Horas Requeridas', 'Horas Cumplidas', 'Empresa'])
         for ap in Aprendiz.query.all():
             ws.append([
                 ap.id_aprendiz,
@@ -322,7 +325,7 @@ def exportar_excel(tipo):
 
     elif tipo == 'instructores':
         ws.title = 'Instructores'
-        ws.append(['ID', 'Nombres', 'Apellidos', 'Correo', 'Área Formación', 'Activo'])
+        ws.append(['ID', 'Nombres', 'Apellidos', 'Correo', 'Ãrea FormaciÃ³n', 'Activo'])
         for inst in Instructor.query.all():
             ws.append([
                 inst.id_instructor,
@@ -330,25 +333,25 @@ def exportar_excel(tipo):
                 inst.usuario.apellidos,
                 inst.usuario.correo,
                 inst.area_formacion or '',
-                'Sí' if inst.activo else 'No'
+                'SÃ­' if inst.activo else 'No'
             ])
         filename = 'instructores.xlsx'
 
     elif tipo == 'empresas':
         ws.title = 'Empresas'
-        ws.append(['ID', 'Nombre', 'NIT', 'Dirección', 'Teléfono', 'Contacto', 'Persona', 'Activa'])
+        ws.append(['ID', 'Nombre', 'NIT', 'DirecciÃ³n', 'TelÃ©fono', 'Contacto', 'Persona', 'Activa'])
         for e in Empresa.query.all():
             ws.append([
                 e.id_empresa, e.nombre, e.nit or '',
                 e.direccion or '', e.telefono or '',
                 e.contacto or '', e.persona_contacto or '',
-                'Sí' if e.activa else 'No'
+                'SÃ­' if e.activa else 'No'
             ])
         filename = 'empresas.xlsx'
 
     elif tipo == 'historial':
         ws.title = 'Historial'
-        ws.append(['ID', 'Usuario', 'Módulo', 'Acción', 'Descripción', 'Fecha'])
+        ws.append(['ID', 'Usuario', 'MÃ³dulo', 'AcciÃ³n', 'DescripciÃ³n', 'Fecha'])
         for h in HistorialCambios.query.order_by(HistorialCambios.fecha.desc()).all():
             ws.append([
                 h.id_historial,
@@ -360,14 +363,182 @@ def exportar_excel(tipo):
             ])
         filename = 'historial.xlsx'
     else:
-        flash('Tipo de exportación no válido.', 'danger')
+        flash('Tipo de exportaciÃ³n no vÃ¡lido.', 'danger')
         return redirect(url_for('admin.backup'))
 
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
-    log_historial(current_user, 'Backup', 'CREAR', f'Exportación Excel: {tipo}')
+    log_historial(current_user, 'Backup', 'CREAR', f'ExportaciÃ³n Excel: {tipo}')
     db.session.commit()
     return send_file(buf, download_name=filename,
                      as_attachment=True,
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+
+# ─── Gestionar Fichas ─────────────────────────
+@bp.route('/fichas')
+@login_required
+@role_required('superusuario')
+def fichas():
+    """Listado completo de fichas/cursos con búsqueda y filtrado"""
+    q = request.args.get('q', '').strip()
+    
+    query = Curso.query
+    if q:
+        query = query.filter(Curso.nombre.ilike(f'%{q}%'))
+    
+    cursos = query.order_by(Curso.nombre).all()
+    
+    # Agregar datos para cada curso
+    fichas_data = []
+    for curso in cursos:
+        instructores = [ci.instructor for ci in curso.instructores]
+        aprendices_count = db.session.query(CursoAprendiz).filter_by(
+            id_curso=curso.id_curso).count()
+        
+        fichas_data.append({
+            'curso': curso,
+            'instructores': instructores,
+            'aprendices_count': aprendices_count
+        })
+    
+    instructores_disponibles = Instructor.query.filter_by(activo=True).all()
+    
+    return render_template('admin/fichas/lista.html',
+                          fichas_data=fichas_data,
+                          instructores=instructores_disponibles,
+                          q=q)
+
+
+@bp.route('/fichas/crear', methods=['POST'])
+@login_required
+@role_required('superusuario')
+def crear_ficha():
+    """Crear nueva ficha/curso"""
+    nombre = request.form.get('nombre', '').strip()
+    ficha = request.form.get('ficha', '').strip()
+    fecha_inicio = request.form.get('fecha_inicio', '')
+    fecha_fin = request.form.get('fecha_fin', '')
+    
+    if not nombre:
+        flash('El nombre es requerido.', 'danger')
+        return redirect(url_for('admin.fichas'))
+    
+    if Curso.query.filter_by(nombre=nombre).first():
+        flash('Ya existe una ficha con ese nombre.', 'warning')
+        return redirect(url_for('admin.fichas'))
+    
+    curso = Curso(nombre=nombre, ficha=ficha,
+                  fecha_inicio=fecha_inicio if fecha_inicio else None,
+                  fecha_fin=fecha_fin if fecha_fin else None)
+    db.session.add(curso)
+    log_historial(current_user, 'Fichas', 'CREAR', f'Ficha {nombre} creada')
+    db.session.commit()
+    
+    flash('Ficha creada correctamente.', 'success')
+    return redirect(url_for('admin.fichas'))
+
+
+@bp.route('/fichas/<int:id_curso>/editar', methods=['POST'])
+@login_required
+@role_required('superusuario')
+def editar_ficha(id_curso):
+    """Editar ficha"""
+    curso = Curso.query.get_or_404(id_curso)
+    nombre = request.form.get('nombre', '').strip()
+    ficha = request.form.get('ficha', '').strip()
+    fecha_inicio = request.form.get('fecha_inicio', '')
+    fecha_fin = request.form.get('fecha_fin', '')
+    
+    if nombre and nombre != curso.nombre:
+        if Curso.query.filter_by(nombre=nombre).first():
+            flash('Ya existe una ficha con ese nombre.', 'warning')
+            return redirect(url_for('admin.fichas'))
+        curso.nombre = nombre
+    
+    curso.ficha = ficha
+    curso.fecha_inicio = fecha_inicio if fecha_inicio else None
+    curso.fecha_fin = fecha_fin if fecha_fin else None
+    
+    log_historial(current_user, 'Fichas', 'MODIFICAR',
+                  f'Ficha {curso.nombre} editada')
+    db.session.commit()
+    flash('Ficha actualizada.', 'success')
+    return redirect(url_for('admin.fichas'))
+
+
+@bp.route('/fichas/<int:id_curso>/eliminar', methods=['POST'])
+@login_required
+@role_required('superusuario')
+def eliminar_ficha(id_curso):
+    """Eliminar ficha (con validación)"""
+    curso = Curso.query.get_or_404(id_curso)
+    
+    # Validar que no tenga aprendices asignados
+    aprendices_count = db.session.query(CursoAprendiz).filter_by(
+        id_curso=id_curso).count()
+    if aprendices_count > 0:
+        flash('No se puede eliminar una ficha con aprendices asignados.', 'danger')
+        return redirect(url_for('admin.fichas'))
+    
+    nombre = curso.nombre
+    db.session.delete(curso)
+    log_historial(current_user, 'Fichas', 'ELIMINAR', f'Ficha {nombre} eliminada')
+    db.session.commit()
+    
+    flash('Ficha eliminada correctamente.', 'success')
+    return redirect(url_for('admin.fichas'))
+
+
+@bp.route('/fichas/<int:id_curso>/asignar-instructor', methods=['POST'])
+@login_required
+@role_required('superusuario')
+def asignar_instructor_ficha(id_curso):
+    """Asignar instructor a ficha"""
+    curso = Curso.query.get_or_404(id_curso)
+    id_instructor = request.form.get('id_instructor', type=int)
+    
+    if not id_instructor:
+        flash('Selecciona un instructor.', 'danger')
+        return redirect(url_for('admin.fichas'))
+    
+    instructor = Instructor.query.get_or_404(id_instructor)
+    
+    # Verificar que no esté ya asignado
+    existe = db.session.query(CursoInstructor).filter_by(
+        id_curso=id_curso, id_instructor=id_instructor).first()
+    
+    if existe:
+        flash('Este instructor ya está asignado a la ficha.', 'warning')
+        return redirect(url_for('admin.fichas'))
+    
+    db.session.add(CursoInstructor(id_curso=id_curso,
+                                   id_instructor=id_instructor))
+    log_historial(current_user, 'Fichas', 'MODIFICAR',
+                  f'Instructor {instructor.usuario.nombres} asignado a {curso.nombre}')
+    db.session.commit()
+    
+    flash('Instructor asignado correctamente.', 'success')
+    return redirect(url_for('admin.fichas'))
+
+
+@bp.route('/fichas/<int:id_curso>/desasignar-instructor/<int:id_instructor>', methods=['POST'])
+@login_required
+@role_required('superusuario')
+def desasignar_instructor_ficha(id_curso, id_instructor):
+    """Remover instructor de ficha"""
+    ci = db.session.query(CursoInstructor).filter_by(
+        id_curso=id_curso, id_instructor=id_instructor).first_or_404()
+    
+    curso = ci.curso
+    instructor = ci.instructor
+    db.session.delete(ci)
+    
+    log_historial(current_user, 'Fichas', 'MODIFICAR',
+                  f'Instructor {instructor.usuario.nombres} desasignado de {curso.nombre}')
+    db.session.commit()
+    
+    flash('Instructor removido de la ficha.', 'success')
+    return redirect(url_for('admin.fichas'))

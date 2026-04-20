@@ -1,6 +1,8 @@
-"""
-Blueprint Instructor — 6 módulos:
+﻿"""
+Blueprint Instructor — 7 módulos:
   /instructor/dashboard
+  /instructor/fichas
+  /instructor/fichas/<id>/detalle
   /instructor/aprendices
   /instructor/evidencias/revisar
   /instructor/progreso
@@ -19,6 +21,8 @@ from app.models.evidencia import Evidencia
 from app.models.notificacion import Notificacion
 from app.models.progreso_aprendiz import ProgresoAprendiz
 from app.models.curso_instructor import CursoInstructor
+from app.models.curso_aprendiz import CursoAprendiz
+from app.models.curso import Curso
 from app.models.empresa import Empresa
 
 bp = Blueprint('instructor', __name__, url_prefix='/instructor')
@@ -37,7 +41,6 @@ def _aprendices_del_instructor():
     ids_cursos = [ci.id_curso for ci in inst.cursos]
     if not ids_cursos:
         return []
-    from app.models.curso_aprendiz import CursoAprendiz
     ids_aprendiz = db.session.query(CursoAprendiz.id_aprendiz).filter(
         CursoAprendiz.id_curso.in_(ids_cursos)
     ).distinct().all()
@@ -57,11 +60,133 @@ def dashboard():
         evidencias_pendientes += Evidencia.query.filter_by(
             id_aprendiz=ap.id_aprendiz, estado='Entregada').count()
 
+    # Preparar datos de fichas/cursos
+    fichas_data = []
+    progreso_general = 0
+    total_horas_cumplidas = 0
+    total_horas_requeridas = 0
+    
+    if inst:
+        cursos = [ci.curso for ci in inst.cursos]
+        for curso in cursos:
+            # Contar aprendices en este curso
+            aprendices_curso = db.session.query(CursoAprendiz).filter_by(
+                id_curso=curso.id_curso).all()
+            
+            # Contar evidencias pendientes en este curso
+            ids_aprendices_curso = [ac.id_aprendiz for ac in aprendices_curso]
+            evidencias_pendientes_curso = 0
+            if ids_aprendices_curso:
+                evidencias_pendientes_curso = db.session.query(Evidencia).filter(
+                    Evidencia.id_aprendiz.in_(ids_aprendices_curso),
+                    Evidencia.estado == 'Entregada'
+                ).count()
+            
+            fichas_data.append({
+                'curso': curso,
+                'aprendices_count': len(aprendices_curso),
+                'evidencias_pendientes': evidencias_pendientes_curso
+            })
+            
+            # Acumular horas para progreso general
+            for ac in aprendices_curso:
+                ap = ac.aprendiz
+                total_horas_cumplidas += ap.horas_cumplidas or 0
+                total_horas_requeridas += ap.horas_requeridas or 0
+    
+    # Calcular progreso general
+    if total_horas_requeridas > 0:
+        progreso_general = round((total_horas_cumplidas / total_horas_requeridas) * 100, 1)
+
     return render_template('instructor/dashboard.html',
                            instructor=inst,
                            total_aprendices=len(aprendices),
                            evidencias_pendientes=evidencias_pendientes,
-                           total_cursos=len(inst.cursos) if inst else 0)
+                           total_cursos=len(inst.cursos) if inst else 0,
+                           fichas_data=fichas_data,
+                           progreso_general=progreso_general)
+
+
+# ─── Fichas del Instructor ────────────────────
+@bp.route('/fichas')
+@login_required
+@role_required('instructor')
+def fichas():
+    """Listado de fichas/cursos del instructor con búsqueda"""
+    q = request.args.get('q', '').strip()
+    inst = _get_instructor()
+    
+    cursos = [ci.curso for ci in inst.cursos] if inst else []
+    
+    # Filtrar por búsqueda
+    if q:
+        cursos = [c for c in cursos if q.lower() in c.nombre.lower()]
+    
+    # Preparar datos
+    fichas_data = []
+    for curso in cursos:
+        aprendices_curso = db.session.query(CursoAprendiz).filter_by(
+            id_curso=curso.id_curso).all()
+        
+        ids_aprendices_curso = [ac.id_aprendiz for ac in aprendices_curso]
+        evidencias_pendientes_curso = 0
+        if ids_aprendices_curso:
+            evidencias_pendientes_curso = db.session.query(Evidencia).filter(
+                Evidencia.id_aprendiz.in_(ids_aprendices_curso),
+                Evidencia.estado == 'Entregada'
+            ).count()
+        
+        fichas_data.append({
+            'curso': curso,
+            'aprendices_count': len(aprendices_curso),
+            'evidencias_pendientes': evidencias_pendientes_curso
+        })
+    
+    return render_template('instructor/fichas/index.html',
+                           fichas_data=fichas_data, q=q)
+
+
+@bp.route('/fichas/<int:id_curso>/detalle')
+@login_required
+@role_required('instructor')
+def ficha_detalle(id_curso):
+    """Detalle de ficha: aprendices + evidencias"""
+    curso = Curso.query.get_or_404(id_curso)
+    
+    # Verificar que el instructor tenga este curso
+    inst = _get_instructor()
+    ids_cursos = [ci.id_curso for ci in inst.cursos] if inst else []
+    if id_curso not in ids_cursos:
+        flash('No tienes acceso a esta ficha.', 'danger')
+        return redirect(url_for('instructor.fichas'))
+    
+    # Obtener aprendices de este curso
+    aprendices_curso = db.session.query(CursoAprendiz).filter_by(
+        id_curso=id_curso).all()
+    
+    aprendices_data = []
+    for ca in aprendices_curso:
+        ap = ca.aprendiz
+        pct = 0
+        if ap.horas_requeridas:
+            pct = round((ap.horas_cumplidas or 0) / ap.horas_requeridas * 100, 1)
+        
+        # Evidencias del aprendiz
+        evidencias = Evidencia.query.filter_by(
+            id_aprendiz=ap.id_aprendiz).order_by(
+            Evidencia.fecha_entrega.desc()).all()
+        
+        aprendices_data.append({
+            'aprendiz': ap,
+            'progreso': pct,
+            'horas_cumplidas': ap.horas_cumplidas,
+            'horas_requeridas': ap.horas_requeridas,
+            'evidencias': evidencias
+        })
+    
+    return render_template('instructor/fichas/detalle.html',
+                           curso=curso,
+                           aprendices_data=aprendices_data)
 
 
 # ─── Mis Aprendices ───────────────────────────

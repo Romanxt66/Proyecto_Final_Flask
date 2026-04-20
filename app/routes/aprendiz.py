@@ -1,5 +1,5 @@
-"""
-Blueprint Aprendiz — 5 módulos:
+﻿"""
+Blueprint Aprendiz — 6 módulos:
   /aprendiz/dashboard
   /aprendiz/evidencias/subir
   /aprendiz/progreso
@@ -68,6 +68,11 @@ def evidencias_subir():
         flash('No tienes un perfil de aprendiz registrado.', 'danger')
         return redirect(url_for('aprendiz.dashboard'))
 
+    # Calcular progreso
+    pct = 0
+    if ap and ap.horas_requeridas:
+        pct = round((ap.horas_cumplidas or 0) / ap.horas_requeridas * 100, 1)
+
     if request.method == 'POST':
         tipo = request.form.get('tipo', '')
         contenido = request.form.get('contenido', '').strip()
@@ -76,10 +81,10 @@ def evidencias_subir():
             archivo = request.files.get('archivo')
             if not archivo or archivo.filename == '':
                 flash('Selecciona un archivo.', 'danger')
-                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap)
+                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap, progreso_pct=pct)
             if not _allowed(archivo.filename):
                 flash('Tipo de archivo no permitido.', 'danger')
-                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap)
+                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap, progreso_pct=pct)
             fname = secure_filename(archivo.filename)
             upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'evidencias')
             os.makedirs(upload_dir, exist_ok=True)
@@ -89,14 +94,14 @@ def evidencias_subir():
         elif tipo == 'enlace':
             if not contenido.startswith('http'):
                 flash('El enlace debe comenzar con http:// o https://', 'danger')
-                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap)
+                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap, progreso_pct=pct)
         elif tipo == 'texto':
             if not contenido:
                 flash('Escribe el contenido de la evidencia.', 'danger')
-                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap)
+                return render_template('aprendiz/evidencias_subir.html', aprendiz=ap, progreso_pct=pct)
         else:
             flash('Selecciona un tipo de evidencia.', 'danger')
-            return render_template('aprendiz/evidencias_subir.html', aprendiz=ap)
+            return render_template('aprendiz/evidencias_subir.html', aprendiz=ap, progreso_pct=pct)
 
         evidencia = Evidencia(
             id_aprendiz=ap.id_aprendiz,
@@ -109,7 +114,7 @@ def evidencias_subir():
         flash('Evidencia enviada correctamente.', 'success')
         return redirect(url_for('aprendiz.mis_evidencias'))
 
-    return render_template('aprendiz/evidencias_subir.html', aprendiz=ap)
+    return render_template('aprendiz/evidencias_subir.html', aprendiz=ap, progreso_pct=pct)
 
 
 # ─── Mi Progreso ──────────────────────────────

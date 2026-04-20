@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Subir Evidencias — SENA Prácticas{% endblock %}
 
 {% block content %}
@@ -8,6 +8,34 @@
     <a href="{{ url_for('aprendiz.mis_evidencias') }}" class="btn btn-secondary">
       <i class="bi bi-arrow-left"></i> Volver a mis evidencias
     </a>
+  </div>
+</div>
+
+<!-- Barra de Progreso Personal -->
+<div class="row mb-4">
+  <div class="col-lg-8 mx-auto">
+    <div class="lib-card" style="border-left: 4px solid var(--accent-green);">
+      <div class="lib-card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0">Tu Progreso de Práctica</h5>
+          <span class="badge-lib badge-green" style="font-size: 1rem;">{{ progreso_pct }}%</span>
+        </div>
+        <div class="progress" style="height: 28px;">
+          <div class="progress-bar bg-success" 
+               style="width: {{ progreso_pct }}%; font-size: 0.9rem; line-height: 28px;"
+               role="progressbar">
+            {% if progreso_pct > 0 %}
+              <span style="color: white; font-weight: bold;">{{ aprendiz.horas_cumplidas or 0 }}/{{ aprendiz.horas_requeridas }} horas</span>
+            {% else %}
+              <span style="color: white; font-weight: bold;">0 horas cumplidas</span>
+            {% endif %}
+          </div>
+        </div>
+        <small class="text-muted d-block mt-2">
+          <i class="bi bi-info-circle"></i> Completa tus horas de práctica enviando evidencias de calidad
+        </small>
+      </div>
+    </div>
   </div>
 </div>
 

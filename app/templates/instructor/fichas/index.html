@@ -1,0 +1,86 @@
+﻿{% extends 'base.html' %}
+{% block title %}Mis Fichas — SENA Prácticas{% endblock %}
+
+{% block content %}
+<div class="page-toolbar">
+  <h2 class="m-0" style="font-size: 1.25rem; font-weight: 600;">Gestión de Fichas / Cursos</h2>
+</div>
+
+<!-- Búsqueda -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <form method="get" class="d-flex gap-2">
+      <input type="text" name="q" class="form-control" placeholder="Buscar ficha por nombre..." value="{{ q }}">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+      {% if q %}
+      <a href="{{ url_for('instructor.fichas') }}" class="btn btn-outline-secondary">Limpiar</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Tabla de Fichas -->
+<div class="biblioteca-shell">
+  <div class="biblioteca-shell-header">
+    <div class="shell-header-icon"><i class="bi bi-book"></i></div>
+    <h4>Fichas Asignadas</h4>
+  </div>
+  <div class="biblioteca-shell-body">
+    {% if fichas_data %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 40%;">Nombre de Ficha</th>
+            <th style="width: 15%;" class="text-center">Aprendices</th>
+            <th style="width: 20%;" class="text-center">Evidencias Pendientes</th>
+            <th style="width: 25%;" class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ficha in fichas_data %}
+          <tr>
+            <td>
+              <strong style="color: var(--accent-cyan);">{{ ficha.curso.nombre }}</strong>
+              {% if ficha.curso.ficha %}
+              <br><small class="text-muted">Código: {{ ficha.curso.ficha }}</small>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <span class="badge badge-lib badge-cyan" style="font-size: 1rem; padding: 0.5rem 0.75rem;">
+                {{ ficha.aprendices_count }}
+              </span>
+            </td>
+            <td class="text-center">
+              {% if ficha.evidencias_pendientes > 0 %}
+              <span class="badge badge-lib badge-amber" style="font-size: 1rem; padding: 0.5rem 0.75rem;">
+                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ ficha.evidencias_pendientes }}
+              </span>
+              {% else %}
+              <span class="text-success"><i class="bi bi-check-circle-fill"></i> Al día</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <a href="{{ url_for('instructor.ficha_detalle', id_curso=ficha.curso.id_curso) }}" 
+                 class="btn btn-ghost btn-sm border-secondary">
+                <i class="bi bi-eye"></i> Ver Detalle
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4">
+      <p class="text-muted mb-0">
+        <i class="bi bi-inbox" style="font-size: 2rem; color: var(--text-muted);"></i><br>
+        No tienes fichas asignadas
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
