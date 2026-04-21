@@ -12,7 +12,12 @@
       {% set ap = item.aprendiz %}
       {% set pct = item.pct %}
       <div class="col-md-6 col-lg-4">
-        <div class="lib-card h-100 position-relative {% if pct >= 100 %}border-success{% endif %}" style="{% if pct >= 100 %}box-shadow: 0 0 15px rgba(63,185,80,0.15);{% endif %}">
+        <div class="lib-card h-100 position-relative {% if pct >= 100 %}border-success{% endif %}" id="card-{{ loop.index }}">
+          <script>
+            if ("{{ 'true' if pct >= 100 else 'false' }}" === "true") {
+              document.getElementById('card-{{ loop.index }}').style.boxShadow = "0 0 15px rgba(63,185,80,0.15)";
+            }
+          </script>
           {% if pct >= 100 %}
           <div class="position-absolute top-0 end-0 p-2">
              <span class="badge-lib badge-green"><i class="bi bi-star-fill text-warning me-1"></i> Completado</span>
@@ -36,8 +41,9 @@
                 <span class="small fw-bold">{{ pct }}%</span>
               </div>
               <div class="progress" style="height: 8px; background: var(--bg-hover);">
-                <div class="progress-bar {% if pct >= 100 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ pct }}%;"></div>
+                <div class="progress-bar {% if pct >= 100 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" id="pb-{{ loop.index }}"></div>
               </div>
+              <script>document.getElementById('pb-{{ loop.index }}').style.width = "{{ pct }}%";</script>
               <div class="d-flex justify-content-between mt-2 small">
                 <span class="text-success"><i class="bi bi-play-fill"></i> {{ ap.horas_cumplidas or 0 }}</span>
                 <span class="text-primary"><i class="bi bi-flag-fill"></i> {{ ap.horas_requeridas or 0 }}</span>

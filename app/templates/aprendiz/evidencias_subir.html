@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Subir Evidencias — SENA Prácticas{% endblock %}
 
 {% block content %}
@@ -22,7 +22,8 @@
         </div>
         <div class="progress" style="height: 28px;">
           <div class="progress-bar bg-success" 
-               style="width: {{ progreso_pct }}%; font-size: 0.9rem; line-height: 28px;"
+               id="progreso-personal-bar"
+               style="font-size: 0.9rem; line-height: 28px;"
                role="progressbar">
             {% if progreso_pct > 0 %}
               <span style="color: white; font-weight: bold;">{{ aprendiz.horas_cumplidas or 0 }}/{{ aprendiz.horas_requeridas }} horas</span>
@@ -31,6 +32,7 @@
             {% endif %}
           </div>
         </div>
+        <script>document.getElementById('progreso-personal-bar').style.width = "{{ progreso_pct }}%";</script>
         <small class="text-muted d-block mt-2">
           <i class="bi bi-info-circle"></i> Completa tus horas de práctica enviando evidencias de calidad
         </small>

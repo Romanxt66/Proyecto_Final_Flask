@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Dashboard Instructor — SENA Prácticas{% endblock %}
 
 {% block content %}
@@ -30,7 +30,8 @@
           <div class="lib-card-title text-muted text-uppercase mb-0">Evidencias Pendientes</div>
           <div class="shell-header-icon" style="color: var(--accent-amber); background: rgba(210,153,34,0.15); border-color: rgba(210,153,34,0.3);"><i class="bi bi-journal-check"></i></div>
         </div>
-        <h3 style="font-size: 2.5rem; font-weight: 700; margin: 0; color: {% if evidencias_pendientes > 0 %}var(--accent-amber){% else %}var(--text-primary){% endif %};">{{ evidencias_pendientes }}</h3>
+        <h3 id="ev-count" style="font-size: 2.5rem; font-weight: 700; margin: 0;">{{ evidencias_pendientes }}</h3>
+        <script>document.getElementById('ev-count').style.color = "{{ 'var(--accent-amber)' if evidencias_pendientes > 0 else 'var(--text-primary)' }}";</script>
         <p class="text-secondary small mt-1">Pendientes de tu revisión</p>
         <a href="{{ url_for('instructor.revisar_evidencias') }}" class="btn btn-ghost btn-sm mt-3 border-secondary">Revisar Evidencias <i class="bi bi-arrow-right ms-1"></i></a>
       </div>
@@ -47,8 +48,9 @@
         </div>
         <h3 style="font-size: 2.5rem; font-weight: 700; margin: 0; color: var(--accent-green);">{{ progreso_general }}%</h3>
         <div class="progress mt-2" style="height: 8px;">
-          <div class="progress-bar bg-success" style="width: {{ progreso_general }}%;" role="progressbar"></div>
+          <div class="progress-bar bg-success" id="progreso-bar" role="progressbar"></div>
         </div>
+        <script>document.getElementById('progreso-bar').style.width = "{{ progreso_general }}%";</script>
         <p class="text-secondary small mt-2">Promedio de tus aprendices</p>
       </div>
     </div>
