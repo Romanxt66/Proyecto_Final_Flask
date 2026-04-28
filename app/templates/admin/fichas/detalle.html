@@ -99,13 +99,12 @@
             <td class="text-center">
               <div style="width: 150px; margin: 0 auto;">
                 <div class="progress" style="height: 20px;">
-                  <div class="progress-bar bg-success" 
-                       style="width: {{ item.progreso }}%;" 
-                       role="progressbar">
+                  <div class="progress-bar bg-success" id="pb-{{ loop.index }}" role="progressbar">
                     <small style="font-size: 0.75rem;">{{ item.progreso }}%</small>
                   </div>
                 </div>
               </div>
+              <script>document.getElementById("pb-{{ loop.index }}").style.width = "{{ item.progreso }}%";</script>
             </td>
             <td>
               {% if item.aprendiz.estado_practica == 'En proceso' %}
