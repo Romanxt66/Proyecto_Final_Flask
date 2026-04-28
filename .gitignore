@@ -10,11 +10,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Base de datos y archivos de instancia de Flask
-instance/
-*.sqlite
-*.sqlite3
-flaskdb.sqlite
 
 # Archivos del sistema y editores
 .DS_Store
