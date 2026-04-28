@@ -55,4 +55,11 @@ def create_app():
         print(f"An error occurred: {str(e)}")
         return {"error": str(e)}, 500
 
+    @app.after_request
+    def add_header(response):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
     return app

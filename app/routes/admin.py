@@ -109,6 +109,40 @@ def crear_usuario():
     return redirect(url_for('admin.usuarios'))
 
 
+@bp.route('/usuarios/<int:id_usuario>/editar', methods=['POST'])
+@login_required
+@role_required('superusuario')
+def editar_usuario(id_usuario):
+    u = Usuario.query.get_or_404(id_usuario)
+    nombres   = request.form.get('nombres', '').strip()
+    apellidos = request.form.get('apellidos', '').strip()
+    correo    = request.form.get('correo', '').strip().lower()
+    telefono  = request.form.get('telefono', '').strip()
+    password  = request.form.get('password', '')
+
+    if not nombres or not apellidos or not correo:
+        flash('Nombres, apellidos y correo son obligatorios.', 'danger')
+        return redirect(url_for('admin.usuarios'))
+
+    if correo != u.correo:
+        if Usuario.query.filter_by(correo=correo).first():
+            flash('Ya existe otro usuario con ese correo.', 'warning')
+            return redirect(url_for('admin.usuarios'))
+
+    u.nombres = nombres
+    u.apellidos = apellidos
+    u.correo = correo
+    u.telefono = telefono
+
+    if password:
+        u.password_hash = generate_password_hash(password)
+
+    log_historial(current_user, 'Usuarios', 'MODIFICAR', f'Usuario {correo} editado')
+    db.session.commit()
+    flash(f'Usuario {nombres} {apellidos} actualizado.', 'success')
+    return redirect(url_for('admin.usuarios'))
+
+
 @bp.route('/usuarios/<int:id_usuario>/toggle', methods=['POST'])
 @login_required
 @role_required('superusuario')

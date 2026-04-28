@@ -1,4 +1,4 @@
-﻿"""
+"""
 Blueprint Aprendiz — 6 módulos:
   /aprendiz/dashboard
   /aprendiz/evidencias/subir
@@ -13,7 +13,7 @@ from flask import (Blueprint, render_template, redirect, url_for,
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from app import db
-from app.utils import role_required
+from app.utils import role_required, enviar_correo_evidencia
 from app.models.evidencia import Evidencia
 from app.models.notificacion import Notificacion
 from app.models.progreso_aprendiz import ProgresoAprendiz
@@ -111,6 +111,15 @@ def evidencias_subir():
         )
         db.session.add(evidencia)
         db.session.commit()
+        
+        # Notificar a los instructores por correo
+        nombre_aprendiz = f"{current_user.nombres} {current_user.apellidos}"
+        for ca in ap.cursos:
+            nombre_curso = ca.curso.nombre
+            for ci in ca.curso.instructores:
+                if ci.instructor and ci.instructor.usuario and ci.instructor.usuario.correo:
+                    enviar_correo_evidencia(ci.instructor.usuario.correo, nombre_aprendiz, nombre_curso)
+
         flash('Evidencia enviada correctamente.', 'success')
         return redirect(url_for('aprendiz.mis_evidencias'))
 

@@ -73,21 +73,26 @@
                 {% endif %}
               </td>
               <td>
-                 <form method="POST" action="{{ url_for('admin.toggle_usuario', id_usuario=u.id_usuario) }}" class="d-flex justify-content-end">
-                   {% if current_user.id_usuario != u.id_usuario %}
-                     {% if u.estado %}
-                      <button type="submit" class="btn btn-sm btn-ghost text-danger border-danger" title="Desactivar acceso" onclick="return confirm('¿Desactivar al usuario {{ u.correo }}?');">
-                         <i class="bi bi-lock-fill"></i> Bloquear
-                      </button>
+                 <div class="d-flex justify-content-end gap-2">
+                   <button type="button" class="btn btn-sm btn-ghost text-primary border-primary" data-bs-toggle="modal" data-bs-target="#modalEditarUsuario{{ u.id_usuario }}" title="Editar usuario">
+                     <i class="bi bi-pencil-square"></i> Editar
+                   </button>
+                   <form method="POST" action="{{ url_for('admin.toggle_usuario', id_usuario=u.id_usuario) }}" class="m-0">
+                     {% if current_user.id_usuario != u.id_usuario %}
+                       {% if u.estado %}
+                        <button type="submit" class="btn btn-sm btn-ghost text-danger border-danger" title="Desactivar acceso" onclick="return confirm('¿Desactivar al usuario {{ u.correo }}?');">
+                           <i class="bi bi-lock-fill"></i> Bloquear
+                        </button>
+                       {% else %}
+                        <button type="submit" class="btn btn-sm btn-ghost text-success border-success" title="Reactivar acceso">
+                           <i class="bi bi-unlock-fill"></i> Desbloquear
+                        </button>
+                       {% endif %}
                      {% else %}
-                      <button type="submit" class="btn btn-sm btn-ghost text-success border-success" title="Reactivar acceso">
-                         <i class="bi bi-unlock-fill"></i> Desbloquear
-                      </button>
+                        <button type="button" class="btn btn-sm btn-secondary" disabled title="No puedes bloquearte a ti mismo">Tú</button>
                      {% endif %}
-                   {% else %}
-                      <button type="button" class="btn btn-sm btn-secondary" disabled title="No puedes bloquearte a ti mismo">Tú</button>
-                   {% endif %}
-                 </form>
+                   </form>
+                 </div>
               </td>
             </tr>
            {% else %}
@@ -159,4 +164,64 @@
     </div>
   </div>
 </div>
+{% for u in usuarios %}
+<!-- Modal Editar Usuario {{ u.id_usuario }} -->
+<div class="modal fade" id="modalEditarUsuario{{ u.id_usuario }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form action="{{ url_for('admin.editar_usuario', id_usuario=u.id_usuario) }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-pencil-square text-primary me-2"></i> Editar Usuario: {{ u.nombres }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+           <div class="row gx-3">
+             <div class="col-md-6 mb-3">
+               <label class="form-label">Nombres <span class="text-danger">*</span></label>
+               <input class="form-control" type="text" name="nombres" value="{{ u.nombres }}" required>
+             </div>
+             <div class="col-md-6 mb-3">
+               <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+               <input class="form-control" type="text" name="apellidos" value="{{ u.apellidos }}" required>
+             </div>
+           </div>
+           
+           <div class="row gx-3">
+             <div class="col-md-6 mb-3">
+               <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+               <div class="input-icon-wrap">
+                 <i class="bi bi-envelope"></i>
+                 <input type="email" class="form-control" name="correo" value="{{ u.correo }}" required>
+               </div>
+             </div>
+             <div class="col-md-6 mb-3">
+               <label class="form-label">Teléfono</label>
+               <div class="input-icon-wrap">
+                 <i class="bi bi-telephone"></i>
+                 <input type="text" class="form-control" name="telefono" value="{{ u.telefono or '' }}">
+               </div>
+             </div>
+           </div>
+
+           <div class="lib-divider"></div>
+
+           <div class="mb-3">
+             <label class="form-label">Nueva Contraseña (Opcional)</label>
+             <div class="input-icon-wrap">
+               <i class="bi bi-lock"></i>
+               <input type="password" class="form-control" name="password" minlength="6" placeholder="Dejar en blanco para no cambiarla">
+             </div>
+             <small class="text-muted">Si ingresas una contraseña aquí, sobrescribirá la actual.</small>
+           </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
 {% endblock %}

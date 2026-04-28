@@ -59,3 +59,52 @@ def log_historial(usuario, modulo: str, accion: str, descripcion: str = ''):
     )
     db.session.add(entry)
     # No hacemos commit aquí; el caller lo hace junto con su transacción principal
+
+# ─────────────────────────────────────────────
+# Helper: enviar correo de notificación (Evidencia)
+# ─────────────────────────────────────────────
+def enviar_correo_evidencia(destinatario: str, aprendiz_nombre: str, curso_nombre: str):
+    """Envía un correo al instructor notificando que se subió una evidencia."""
+    import smtplib
+    from email.message import EmailMessage
+    from flask import current_app
+
+    remitente = current_app.config.get('MAIL_USERNAME')
+    password = current_app.config.get('MAIL_PASSWORD')
+    servidor = current_app.config.get('MAIL_SERVER')
+    puerto = current_app.config.get('MAIL_PORT')
+
+    if not remitente or not password:
+        print("Advertencia: No se han configurado las credenciales de correo (MAIL_USERNAME/MAIL_PASSWORD). Correo no enviado.")
+        return False
+
+    msg = EmailMessage()
+    msg['Subject'] = f"Nueva Evidencia Subida - {curso_nombre}"
+    msg['From'] = remitente
+    msg['To'] = destinatario
+    
+    contenido = f"""Hola,
+
+El aprendiz {aprendiz_nombre} ha subido una nueva evidencia para el curso {curso_nombre}.
+
+Por favor, ingresa al sistema para revisarla.
+
+Saludos,
+Sistema de Gestión"""
+
+    msg.set_content(contenido)
+
+    try:
+        if current_app.config.get('MAIL_USE_SSL'):
+            with smtplib.SMTP_SSL(servidor, puerto) as server:
+                server.login(remitente, password)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(servidor, puerto) as server:
+                server.starttls()
+                server.login(remitente, password)
+                server.send_message(msg)
+        return True
+    except Exception as e:
+        print(f"Error al enviar correo a {destinatario}: {e}")
+        return False
