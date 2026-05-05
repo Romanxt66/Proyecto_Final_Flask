@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia el resto del código de la aplicación
 COPY . .
 
-# Expone el puerto 81, que es el que usa la app en run.py
-EXPOSE 81
+# Expone el puerto 5001, que es el que usa la app en run.py
+EXPOSE 5001
 
 # Comando por defecto para iniciar la aplicación
 CMD ["python", "run.py"]

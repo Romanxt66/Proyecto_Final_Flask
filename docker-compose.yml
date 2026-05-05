@@ -4,8 +4,8 @@ services:
   web:
     build: .
     container_name: sena_flask_app
-    expose:
-      - "5001"
+    ports:
+      - "5001:5001"
     volumes:
       - .:/app
       # Evitamos sobrescribir los directorios de entorno virtual y caché generados localmente
