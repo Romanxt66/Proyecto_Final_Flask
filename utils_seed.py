@@ -1,4 +1,5 @@
 import sys
+import os
 from app import create_app, db
 from app.models.rol import Rol
 from app.models.usuario import Usuario
@@ -19,7 +20,7 @@ def seed_data():
     db.session.commit()
 
     # 2. Crear superusuario inicial
-    correo_admin = 'admin@sena.edu.co'
+    correo_admin = os.getenv('ADMIN_EMAIL', 'admin@sena.edu.co')
     admin_user = Usuario.query.filter_by(correo=correo_admin).first()
     
     if not admin_user:
@@ -29,7 +30,7 @@ def seed_data():
             nombres='Administrador',
             apellidos='Sistema SENA',
             correo=correo_admin,
-            password_hash=generate_password_hash('Admin123!'),
+            password_hash=generate_password_hash(os.getenv('ADMIN_PASSWORD', 'Admin123!')),
             estado=True
         )
         db.session.add(admin_user)
@@ -39,7 +40,7 @@ def seed_data():
         rol_super = Rol.query.filter_by(nombre='superusuario').first()
         if rol_super:
             db.session.add(UsuarioRol(id_usuario=admin_user.id_usuario, id_rol=rol_super.id_rol))
-            print(f"Superusuario '{correo_admin}' (pass: Admin123!) creado correctamente.")
+            print(f"Superusuario '{correo_admin}' creado correctamente.")
         
         db.session.commit()
     else:
