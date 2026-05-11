@@ -14,6 +14,7 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_APP=run.py
+      - DATABASE_URL=postgresql+psycopg://admin:1052020405Nr.@postgres-db:5432/master_db
       # Si tienes base de datos externa u otras variables (ej. base de datos, API keys, etc), puedes añadirlas aquí
     restart: unless-stopped
     # command: ["python", "run.py"] # Ya está definido en el Dockerfile, pero puede sobreescribirse aquí si es necesario
