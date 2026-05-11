@@ -4,7 +4,7 @@ from app import create_app, db
 from app.models.rol import Rol
 from app.models.usuario import Usuario
 from app.models.usuario_rol import UsuarioRol
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 def seed_data():
     """Crea los roles básicos y un usuario superusuario si la base de datos está vacía."""
@@ -21,6 +21,13 @@ def seed_data():
 
     # 2. Crear superusuario inicial
     correo_admin = os.getenv('ADMIN_EMAIL', 'admin@sena.edu.co')
+    admin_pass = os.getenv('ADMIN_PASSWORD')
+    
+    if not admin_pass:
+        print("⚠️ ADVERTENCIA: La variable de entorno ADMIN_PASSWORD no está definida.")
+        print("⚠️ Saltando la creación o sincronización del superusuario por seguridad.")
+        return
+        
     admin_user = Usuario.query.filter_by(correo=correo_admin).first()
     
     if not admin_user:
@@ -30,7 +37,7 @@ def seed_data():
             nombres='Administrador',
             apellidos='Sistema SENA',
             correo=correo_admin,
-            password_hash=generate_password_hash(os.getenv('ADMIN_PASSWORD', 'Admin123!')),
+            password_hash=generate_password_hash(admin_pass),
             estado=True
         )
         db.session.add(admin_user)
@@ -44,7 +51,13 @@ def seed_data():
         
         db.session.commit()
     else:
-        print("El superusuario ya existe. Omitiendo la creación.")
+        # Sincronizar contraseña con la variable de entorno
+        if not check_password_hash(admin_user.password_hash, admin_pass):
+            admin_user.password_hash = generate_password_hash(admin_pass)
+            db.session.commit()
+            print(f"Contraseña del superusuario '{correo_admin}' sincronizada con la variable de entorno.")
+        else:
+            print("El superusuario ya existe y su contraseña está sincronizada.")
 
 if __name__ == '__main__':
     app = create_app()
