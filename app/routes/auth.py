@@ -52,7 +52,7 @@ def login():
             flash('Contraseña incorrecta.', 'danger')
             return render_template('auth/login.html')
 
-        login_user(usuario, remember=True)
+        login_user(usuario, remember=False)
         flash(f'¡Bienvenido, {usuario.nombres}!', 'success')
         return _redirect_by_role(usuario)
 
