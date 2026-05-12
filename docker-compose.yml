@@ -11,9 +11,11 @@ services:
       # Evitamos sobrescribir los directorios de entorno virtual y caché generados localmente
       - /app/.venv
       - /app/__pycache__
-    env_file:
-      - .env
-   
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=run.py
+      - DATABASE_URL=${DATABASE_URL}
+  
     restart: unless-stopped
     # command: ["python", "run.py"] # Ya está definido en el Dockerfile, pero puede sobreescribirse aquí si es necesario
 
