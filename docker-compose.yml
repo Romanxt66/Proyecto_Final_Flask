@@ -11,10 +11,10 @@ services:
       # Evitamos sobrescribir los directorios de entorno virtual y caché generados localmente
       - /app/.venv
       - /app/__pycache__
-    environment:
-      - FLASK_ENV=development
-      - FLASK_APP=run.py
-      - DATABASE_URL=postgresql+psycopg://admin:1052020405Nr.@postgres-db:5432/master_db
-      # Si tienes base de datos externa u otras variables (ej. base de datos, API keys, etc), puedes añadirlas aquí
+    env_file:
+      - .env
+   
     restart: unless-stopped
     # command: ["python", "run.py"] # Ya está definido en el Dockerfile, pero puede sobreescribirse aquí si es necesario
+
+
