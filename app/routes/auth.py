@@ -23,16 +23,18 @@ bp = Blueprint('auth', __name__)
 # ─── Landing page ─────────────────────────────
 @bp.route('/')
 def landing():
-    if current_user.is_authenticated:
-        return _redirect_by_role(current_user)
+    # Eliminado para que no redirija automáticamente al dashboard si ya hay sesión
+    # if current_user.is_authenticated:
+    #     return _redirect_by_role(current_user)
     return render_template('auth/landing.html')
 
 
 # ─── Login ────────────────────────────────────
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return _redirect_by_role(current_user)
+    # Eliminado para permitir ver el formulario de login en nuevas pestañas
+    # if current_user.is_authenticated:
+    #     return _redirect_by_role(current_user)
 
     if request.method == 'POST':
         correo   = request.form.get('correo', '').strip().lower()
@@ -52,7 +54,7 @@ def login():
             flash('Contraseña incorrecta.', 'danger')
             return render_template('auth/login.html')
 
-        login_user(usuario, remember=True)
+        login_user(usuario, remember=False)
         flash(f'¡Bienvenido, {usuario.nombres}!', 'success')
         return _redirect_by_role(usuario)
 
@@ -62,8 +64,9 @@ def login():
 # ─── Registro (solo aprendices) ───────────────
 @bp.route('/registro', methods=['GET', 'POST'])
 def registro():
-    if current_user.is_authenticated:
-        return _redirect_by_role(current_user)
+    # Eliminado para permitir el registro incluso si hay sesión
+    # if current_user.is_authenticated:
+    #     return _redirect_by_role(current_user)
 
     if request.method == 'POST':
         datos = {
