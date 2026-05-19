@@ -5,7 +5,7 @@ Blueprint de Autenticación:
   GET/POST /registro → registro solo aprendices
   GET  /logout     → cerrar sesión
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from app import db
@@ -56,7 +56,11 @@ def login():
 
         login_user(usuario, remember=False)
         flash(f'¡Bienvenido, {usuario.nombres}!', 'success')
-        return _redirect_by_role(usuario)
+        
+        # Establecer cookie temporal para indicar a la nueva pestaña que inicie la sesión de sessionStorage
+        response = make_response(_redirect_by_role(usuario))
+        response.set_cookie('just_logged_in', '1', path='/')
+        return response
 
     return render_template('auth/login.html')
 

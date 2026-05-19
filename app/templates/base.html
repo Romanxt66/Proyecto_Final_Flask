@@ -148,5 +148,25 @@
 <!-- Bootstrap JS (local) -->
 <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 {% block extra_js %}{% endblock %}
+
+<script>
+    // Validar sesión por pestaña (sessionStorage)
+    {% if current_user.is_authenticated %}
+        if (!sessionStorage.getItem('tabSessionActive')) {
+            if (document.cookie.indexOf('just_logged_in=1') !== -1) {
+                // Acabamos de iniciar sesión, inicializamos la sesión de la pestaña
+                sessionStorage.setItem('tabSessionActive', 'true');
+                // Borramos la cookie para que no se use en otras pestañas
+                document.cookie = "just_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            } else {
+                // Nueva pestaña o sesión de pestaña cerrada, forzar cierre de sesión
+                window.location.href = "{{ url_for('auth.logout') }}";
+            }
+        }
+    {% else %}
+        // Si no está autenticado, asegurarse de limpiar la sesión de la pestaña
+        sessionStorage.removeItem('tabSessionActive');
+    {% endif %}
+</script>
 </body>
 </html>
