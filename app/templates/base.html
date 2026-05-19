@@ -21,7 +21,17 @@
 <nav class="navbar biblioteca-nav navbar-expand-lg">
   <div class="container-fluid px-4">
 
-    <a class="navbar-brand" href="{{ url_for('auth.landing') }}">
+    {% set rol = namespace(nombre='') %}
+    {% if current_user.is_authenticated %}
+      {% for ur in current_user.roles %}
+        {% if ur.rol.nombre == 'superusuario' %}{% set rol.nombre = 'superusuario' %}
+        {% elif ur.rol.nombre == 'instructor' and rol.nombre != 'superusuario' %}{% set rol.nombre = 'instructor' %}
+        {% elif ur.rol.nombre == 'aprendiz' and rol.nombre == '' %}{% set rol.nombre = 'aprendiz' %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    <a class="navbar-brand" href="{% if rol.nombre == 'superusuario' %}{{ url_for('admin.dashboard') }}{% elif rol.nombre == 'instructor' %}{{ url_for('instructor.dashboard') }}{% elif rol.nombre == 'aprendiz' %}{{ url_for('aprendiz.dashboard') }}{% else %}{{ url_for('auth.landing') }}{% endif %}">
       <i class="bi bi-mortarboard-fill brand-icon"></i>
       SENA Prácticas
     </a>
@@ -33,14 +43,6 @@
 
     <div class="collapse navbar-collapse" id="navMain">
       <ul class="navbar-nav me-auto gap-1">
-
-        {% set rol = namespace(nombre='') %}
-        {% for ur in current_user.roles %}
-          {% if ur.rol.nombre == 'superusuario' %}{% set rol.nombre = 'superusuario' %}
-          {% elif ur.rol.nombre == 'instructor' and rol.nombre != 'superusuario' %}{% set rol.nombre = 'instructor' %}
-          {% elif ur.rol.nombre == 'aprendiz' and rol.nombre == '' %}{% set rol.nombre = 'aprendiz' %}
-          {% endif %}
-        {% endfor %}
 
         {% if rol.nombre == 'aprendiz' %}
           <li class="nav-item"><a class="nav-link {% if request.endpoint == 'aprendiz.dashboard' %}active{% endif %}"
