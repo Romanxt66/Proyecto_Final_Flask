@@ -23,9 +23,8 @@ bp = Blueprint('auth', __name__)
 # ─── Landing page ─────────────────────────────
 @bp.route('/')
 def landing():
-    # Eliminado para que no redirija automáticamente al dashboard si ya hay sesión
-    # if current_user.is_authenticated:
-    #     return _redirect_by_role(current_user)
+    if current_user.is_authenticated:
+        return _redirect_by_role(current_user)
     return render_template('auth/landing.html')
 
 
