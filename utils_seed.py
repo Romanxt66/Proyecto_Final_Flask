@@ -20,8 +20,12 @@ def seed_data():
     db.session.commit()
 
     # 2. Crear superusuario inicial
-    correo_admin = os.getenv('ADMIN_EMAIL', 'admin@sena.edu.co')
+    correo_admin = os.getenv('ADMIN_EMAIL')
     admin_pass = os.getenv('ADMIN_PASSWORD')
+    tipo_documento = os.getenv('ADMIN_TIPO_DOCUMENTO')
+    numero_documento = os.getenv('ADMIN_NUMERO_DOCUMENTO')
+    nombres = os.getenv('ADMIN_NOMBRES')
+    apellidos = os.getenv('ADMIN_APELLIDOS')
     
     if not admin_pass:
         print("⚠️ ADVERTENCIA: La variable de entorno ADMIN_PASSWORD no está definida.")
@@ -32,10 +36,10 @@ def seed_data():
     
     if not admin_user:
         admin_user = Usuario(
-            tipo_documento='CC',
-            numero_documento='1234567890',
-            nombres='Administrador',
-            apellidos='Sistema SENA',
+            tipo_documento=tipo_documento,
+            numero_documento=numero_documento,
+            nombres=nombres,
+            apellidos=apellidos,
             correo=correo_admin,
             password_hash=generate_password_hash(admin_pass),
             estado=True
