@@ -57,10 +57,7 @@ def login():
         login_user(usuario, remember=False)
         flash(f'¡Bienvenido, {usuario.nombres}!', 'success')
         
-        # Establecer cookie temporal para indicar a la nueva pestaña que inicie la sesión de sessionStorage
-        response = make_response(_redirect_by_role(usuario))
-        response.set_cookie('just_logged_in', '1', path='/')
-        return response
+        return _redirect_by_role(usuario, login_success=True)
 
     return render_template('auth/login.html')
 
@@ -159,10 +156,11 @@ def logout():
 
 
 # ─── Helper: redirigir según rol ──────────────
-def _redirect_by_role(usuario):
+def _redirect_by_role(usuario, login_success=False):
     rol = get_user_role(usuario)
+    kwargs = {'login_success': '1'} if login_success else {}
     if rol == 'superusuario':
-        return redirect(url_for('admin.dashboard'))
+        return redirect(url_for('admin.dashboard', **kwargs))
     if rol == 'instructor':
-        return redirect(url_for('instructor.dashboard'))
-    return redirect(url_for('aprendiz.dashboard'))
+        return redirect(url_for('instructor.dashboard', **kwargs))
+    return redirect(url_for('aprendiz.dashboard', **kwargs))
